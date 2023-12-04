@@ -7,6 +7,8 @@ import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.transforms.Transformation;
 import org.apache.kafka.connect.transforms.util.SimpleConfig;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,8 +63,10 @@ public abstract class XmlToJson<R extends ConnectRecord<R>> implements Transform
                 put(key, lookup(map, key, delimiter));
             }
             put(xmlDataKey, xmlData);
+            put("created", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         }};
 
+        System.out.println(xmlDataMap);
         return xmlDataMap;
     }
 
