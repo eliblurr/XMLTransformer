@@ -66,7 +66,6 @@ public abstract class XmlToJson<R extends ConnectRecord<R>> implements Transform
             put("created", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         }};
 
-        System.out.println(xmlDataMap);
         return xmlDataMap;
     }
 
