@@ -12,6 +12,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public abstract class XmlToJson<R extends ConnectRecord<R>> implements Transformation<R> {
@@ -60,13 +62,34 @@ public abstract class XmlToJson<R extends ConnectRecord<R>> implements Transform
 
         Map<String, Object> xmlDataMap = new HashMap<String, Object>() {{
             for (String key : keysToExtract){
-                put(key, lookup(map, key, delimiter));
+                Map<String, String> parsedKey = parseKey(key);
+                put(parsedKey.get("id"), lookup(map, parsedKey.get("lookupKey"), delimiter));
             }
             put(xmlDataKey, xmlData);
             put("created", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         }};
 
         return xmlDataMap;
+    }
+
+    private Map<String, String> parseKey(String key){
+        String id = key;
+        String lookupKey = key;
+
+        Pattern pattern = Pattern.compile("\\[([^\\]]+)\\]");
+        Matcher matcher = pattern.matcher(key);
+
+        if (matcher.find()) {
+            id = matcher.group(1);
+            lookupKey = key.replace("[" + id + "]", "");
+        }
+
+        String finalLookupKey = lookupKey;
+        String finalId = id;
+        return new HashMap<String, String>() {{
+            put("lookupKey", finalLookupKey);
+            put("id", finalId);
+        }};
     }
 
     private Object lookup(Map<String, Object> nestedMap, String keys, String delimiter) {
@@ -80,7 +103,6 @@ public abstract class XmlToJson<R extends ConnectRecord<R>> implements Transform
                         .filter(element -> element instanceof Map)
                         .map(element -> ((Map<?, ?>) element).get(key))
                         .filter(value -> value != null).collect(Collectors.toList());
-//                        .toList();
             } else if (result instanceof Map) {
                 result = ((Map<?, ?>) result).get(key);
                 if (result == null) {

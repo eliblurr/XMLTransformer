@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,7 +33,7 @@ public class XmlToJsonTest {
         xmlData = new String(Files.readAllBytes(path));
 
         props = new HashMap<String, String>() {{
-            put("keys", "Customers.Customer.ContactName, Customers.Customer.ContactTitle");
+            put("keys", "Customers.Customer.ContactName[ContactName],Customers.Customer.ContactTitle[ContactTitle],Customers.Customer.ContactName");
             put("keys.delimiter.regex", "\\.");
             put("xml.map.key", "blob");
         }};
@@ -66,13 +67,17 @@ public class XmlToJsonTest {
     public void xmlToJson_ValidateTransformOutputHasAllKeys() {
 
         Map<?,?> value = (Map) xformValue.apply(sourceRecord).value();
+        assertFalse(value.containsKey("Customers.Customer.ContactTitle"));
         assertTrue(value.containsKey("Customers.Customer.ContactName"));
-        assertTrue(value.containsKey("Customers.Customer.ContactTitle"));
+        assertTrue(value.containsKey("ContactName"));
+        assertTrue(value.containsKey("ContactTitle"));
         assertTrue(value.containsKey("blob"));
 
         Map<?,?> key = (Map) xformKey.apply(sourceRecord).key();
+        assertFalse(key.containsKey("Customers.Customer.ContactTitle"));
         assertTrue(key.containsKey("Customers.Customer.ContactName"));
-        assertTrue(key.containsKey("Customers.Customer.ContactTitle"));
+        assertTrue(value.containsKey("ContactName"));
+        assertTrue(value.containsKey("ContactTitle"));
         assertTrue(key.containsKey("blob"));
     }
 
