@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,7 +32,7 @@ public class XmlToJsonTest {
         xmlData = new String(Files.readAllBytes(path));
 
         props = new HashMap<String, String>() {{
-            put("keys", "Customers.Customer.ContactName[ContactName],Customers.Customer.ContactTitle[ContactTitle],Customers.Customer.ContactName");
+            put("keys", "Customers.Customer.ContactName[ContactName],Customers.Customer.ContactTitle[ContactTitle],Customers.Customer.ContactName,MxML.trades.trade.portfolios.portfolio.portfolioLabel[books][.*],Customers.Customer");
             put("keys.delimiter.regex", "\\.");
             put("xml.map.key", "blob");
         }};

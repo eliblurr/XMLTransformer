@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SplittableRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -31,7 +32,7 @@ public abstract class XmlToJson<R extends ConnectRecord<R>> implements Transform
         .define(ConfigName.XML_MAP_KEY_CONFIG, ConfigDef.Type.STRING, "_xml_data_", ConfigDef.Importance.MEDIUM,
                 "Field containing key in resulting map to hold original xml.")
         .define(ConfigName.KEY_FIELDS_CONFIG, ConfigDef.Type.LIST, ConfigDef.Importance.HIGH,
-                "Fields containing the custom keys in XML data.")
+                "Fields containing the custom keys in XML data. Format: '<key-path>[<alias>][<filter-regex>]'")
         .define(ConfigName.KEY_DELIMITER_CONFIG, ConfigDef.Type.STRING, ".", ConfigDef.Importance.HIGH,
                 "Field containing single nested key delimiter.");
 
@@ -63,7 +64,11 @@ public abstract class XmlToJson<R extends ConnectRecord<R>> implements Transform
         Map<String, Object> xmlDataMap = new HashMap<String, Object>() {{
             for (String key : keysToExtract){
                 Map<String, String> parsedKey = parseKey(key);
-                put(parsedKey.get("id"), lookup(map, parsedKey.get("lookupKey"), delimiter));
+                Object data = lookup(map, parsedKey.get("lookupKey"), delimiter);
+                if (parsedKey.get("filterRegex") != null){
+                    data = filterAndRemoveDuplicates(data, parsedKey.get("filterRegex"));
+                }
+                put(parsedKey.get("id"), data);
             }
             put(xmlDataKey, xmlData);
             put("created", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
@@ -73,20 +78,26 @@ public abstract class XmlToJson<R extends ConnectRecord<R>> implements Transform
     }
 
     private Map<String, String> parseKey(String key){
-        String id = key;
+        String filterRegex = null;
         String lookupKey = key;
+        String id = key;
 
-        Pattern pattern = Pattern.compile("\\[([^\\]]+)\\]");
+        Pattern pattern = Pattern.compile("(^[^\\[]*)(?:\\[([^\\]]+)\\])?(?:\\[([^\\]]+)\\])?");
         Matcher matcher = pattern.matcher(key);
 
         if (matcher.find()) {
-            id = matcher.group(1);
-            lookupKey = key.replace("[" + id + "]", "");
+            id = matcher.group(2);
+            lookupKey = matcher.group(1);
+            filterRegex = matcher.group(3);
+            if (id == null) id = lookupKey;
         }
 
+        String finalFilterRegex = filterRegex;
         String finalLookupKey = lookupKey;
         String finalId = id;
+
         return new HashMap<String, String>() {{
+            put("filterRegex", finalFilterRegex);
             put("lookupKey", finalLookupKey);
             put("id", finalId);
         }};
@@ -116,6 +127,15 @@ public abstract class XmlToJson<R extends ConnectRecord<R>> implements Transform
             }
         }
         return result;
+    }
+
+    private Object filterAndRemoveDuplicates(Object data, String filterValueRegex) {
+        if (data instanceof List<?>) {
+            ((List<?>) data).removeIf(item -> !(item instanceof String) );
+            ((List<?>) data).removeIf(item -> !Pattern.matches(filterValueRegex, (String) item));
+        }
+        List<String> res = (List) data;
+        return res.stream().distinct().collect(Collectors.toList());
     }
 
     @Override
