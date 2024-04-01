@@ -431,14 +431,21 @@
       <trade>
         <portfolios>
           <portfolio>
-            <portfolioLabel>l2</portfolioLabel>
+            <portfolioLabel>l2_asds_Asdsd</portfolioLabel>
           </portfolio>
         </portfolios>
       </trade>
       <trade>
         <portfolios>
           <portfolio>
-            <portfolioLabel>l2</portfolioLabel>
+            <portfolioLabel>l2_asdasd</portfolioLabel>
+          </portfolio>
+        </portfolios>
+      </trade>
+      <trade>
+        <portfolios>
+          <portfolio>
+            <portfolioLabel>l2_Asdasd_AsdaSD_ASDASD</portfolioLabel>
           </portfolio>
         </portfolios>
       </trade>

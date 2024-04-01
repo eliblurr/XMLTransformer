@@ -32,7 +32,7 @@ public abstract class XmlToJson<R extends ConnectRecord<R>> implements Transform
         .define(ConfigName.XML_MAP_KEY_CONFIG, ConfigDef.Type.STRING, "_xml_data_", ConfigDef.Importance.MEDIUM,
                 "Field containing key in resulting map to hold original xml.")
         .define(ConfigName.KEY_FIELDS_CONFIG, ConfigDef.Type.LIST, ConfigDef.Importance.HIGH,
-                "Fields containing the custom keys in XML data. Format: '<key-path>[<alias>][<filter-regex>]'")
+                "Fields containing the custom keys in XML data. Format: '<key-path>[<alias>][<filter-regex>][capture/extract-regex]'")
         .define(ConfigName.KEY_DELIMITER_CONFIG, ConfigDef.Type.STRING, ".", ConfigDef.Importance.HIGH,
                 "Field containing single nested key delimiter.");
 
@@ -68,36 +68,56 @@ public abstract class XmlToJson<R extends ConnectRecord<R>> implements Transform
                 if (parsedKey.get("filterRegex") != null){
                     data = filterAndRemoveDuplicates(data, parsedKey.get("filterRegex"));
                 }
+
+                if (parsedKey.get("extractRegex") != null) {
+                    if (data instanceof List<?>) {
+                        List <?> tmp = (List) data;
+                        if ( tmp.stream().allMatch(item -> item instanceof String) ) {
+                            data = tmp.stream().map(item -> extractSubStringFromRegex((String) item, parsedKey.get("extractRegex")))
+                                    .filter(item -> item != null).distinct().collect(Collectors.toList());
+                        }
+                    }
+                }
+
                 put(parsedKey.get("id"), data);
             }
             put(xmlDataKey, xmlData);
             put("created", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         }};
 
+        System.out.println(xmlDataMap);
+
         return xmlDataMap;
     }
 
     private Map<String, String> parseKey(String key){
         String filterRegex = null;
+        String extractRegex = null;
         String lookupKey = key;
         String id = key;
 
-        Pattern pattern = Pattern.compile("(^[^\\[]*)(?:\\[([^\\]]+)\\])?(?:\\[([^\\]]+)\\])?");
+        // https://regex101.com/r/PQeWQy/1
+        Pattern pattern = Pattern.compile("(^[^\\[]*)(?:\\[([^\\]]+)\\])?(?:\\[([^\\]]+)\\])?(?:\\[([^\\]]+)\\])?");
         Matcher matcher = pattern.matcher(key);
 
         if (matcher.find()) {
             id = matcher.group(2);
             lookupKey = matcher.group(1);
             filterRegex = matcher.group(3);
+            extractRegex = matcher.group(4);
+//                    "_[^_].*$"; // second part
+//                    "^[^_]+"; // first part
             if (id == null) id = lookupKey;
         }
 
         String finalFilterRegex = filterRegex;
+        String finalExtractRegex = extractRegex;
         String finalLookupKey = lookupKey;
         String finalId = id;
 
         return new HashMap<String, String>() {{
             put("filterRegex", finalFilterRegex);
+            put("extractRegex", finalExtractRegex);
             put("lookupKey", finalLookupKey);
             put("id", finalId);
         }};
@@ -136,6 +156,14 @@ public abstract class XmlToJson<R extends ConnectRecord<R>> implements Transform
         }
         List<String> res = (List) data;
         return res.stream().distinct().collect(Collectors.toList());
+    }
+
+    private String extractSubStringFromRegex(String data, String extractRegex) {
+        Pattern pattern = Pattern.compile(extractRegex);
+        Matcher matcher = pattern.matcher(data);
+
+        if (matcher.find()) { return matcher.group(); }
+        return null;
     }
 
     @Override
