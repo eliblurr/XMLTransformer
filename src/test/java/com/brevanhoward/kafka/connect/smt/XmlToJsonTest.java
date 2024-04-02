@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,11 +29,16 @@ public class XmlToJsonTest {
 
     @Before
     public void setUp() throws IOException {
-        Path path = Paths.get(getClass().getClassLoader().getResource("sample.xml").getFile());
-        xmlData = new String(Files.readAllBytes(path));
+        try{
+            URI uri = getClass().getClassLoader().getResource("sample.xml").toURI();
+            Path path = Paths.get(uri);
+            xmlData = new String(Files.readAllBytes(path));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         props = new HashMap<String, String>() {{
-            put("keys", "Customers.Customer.ContactName<ContactName>,Customers.Customer.ContactTitle<ContactTitle>,Customers.Customer.ContactName,MxML.trades.trade.portfolios.portfolio.portfolioLabel<books><.*><_[^_].*$>,Customers.Customer");
+            put("keys", "Customers.Customer.ContactName<ContactName>,Customers.Customer.ContactTitle<ContactTitle>,Customers.Customer.ContactName,MxML.trades.trade.portfolios.portfolio.portfolioLabel<labels><.*><_[^_].*$>,MxML.trades.trade.portfolios.portfolio.portfolioLabel<books><.*><^[^_]+>,Customers.Customer");
             put("keys.delimiter.regex", "\\.");
             put("xml.map.key", "blob");
         }};
