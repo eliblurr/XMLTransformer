@@ -96,8 +96,7 @@ public abstract class XmlToJson<R extends ConnectRecord<R>> implements Transform
         String lookupKey = key;
         String id = key;
 
-        // https://regex101.com/r/PQeWQy/1
-        Pattern pattern = Pattern.compile("(^[^\\[]*)(?:\\[([^\\]]+)\\])?(?:\\[([^\\]]+)\\])?(?:\\[([^\\]]+)\\])?");
+        Pattern pattern = Pattern.compile("(^[^\\<]*)(?:\\<([^>]+)\\>)?(?:\\<([^>]+)\\>)?(?:\\<([^>]+)\\>)?");
         Matcher matcher = pattern.matcher(key);
 
         if (matcher.find()) {

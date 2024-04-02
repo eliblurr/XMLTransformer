@@ -32,7 +32,7 @@ public class XmlToJsonTest {
         xmlData = new String(Files.readAllBytes(path));
 
         props = new HashMap<String, String>() {{
-            put("keys", "Customers.Customer.ContactName[ContactName],Customers.Customer.ContactTitle[ContactTitle],Customers.Customer.ContactName,MxML.trades.trade.portfolios.portfolio.portfolioLabel[books][.*],Customers.Customer");
+            put("keys", "Customers.Customer.ContactName<ContactName>,Customers.Customer.ContactTitle<ContactTitle>,Customers.Customer.ContactName,MxML.trades.trade.portfolios.portfolio.portfolioLabel<books><.*><_[^_].*$>,Customers.Customer");
             put("keys.delimiter.regex", "\\.");
             put("xml.map.key", "blob");
         }};

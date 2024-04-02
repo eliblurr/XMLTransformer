@@ -424,7 +424,7 @@
       <trade>
         <portfolios>
           <portfolio>
-            <portfolioLabel>l1</portfolioLabel>
+            <portfolioLabel></portfolioLabel>
           </portfolio>
         </portfolios>
       </trade>
@@ -438,14 +438,14 @@
       <trade>
         <portfolios>
           <portfolio>
-            <portfolioLabel>l2_asdasd</portfolioLabel>
+            <portfolioLabel>l3_asdasd</portfolioLabel>
           </portfolio>
         </portfolios>
       </trade>
       <trade>
         <portfolios>
           <portfolio>
-            <portfolioLabel>l2_Asdasd_AsdaSD_ASDASD</portfolioLabel>
+            <portfolioLabel>l4_Asdasd_AsdaSD_ASDASD</portfolioLabel>
           </portfolio>
         </portfolios>
       </trade>

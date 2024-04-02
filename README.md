@@ -19,7 +19,7 @@ transforms=xmltojson
 transforms.xmltojson.type=com.brevanhoward.kafka.connect.smt.XmlToJson$Value
 transforms.xmltojson.keys.delimiter.regex=\\.
 transforms.xmltojson.xml.map.key=xmlBlob
-transforms.xmltojson.keys=Customers.Customer.ContactName[AliasForContactName],Customers.Customer.ContactName, Customers.Customer.ContactTitle
+transforms.xmltojson.keys=Customers.Customer.ContactName<AliasForContactName>,Customers.Customer.ContactName, Customers.Customer.ContactTitle
 ```
 
 ToDO
