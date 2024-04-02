@@ -85,8 +85,6 @@ public abstract class XmlToJson<R extends ConnectRecord<R>> implements Transform
             put("created", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         }};
 
-        System.out.println(xmlDataMap);
-
         return xmlDataMap;
     }
 
@@ -104,8 +102,6 @@ public abstract class XmlToJson<R extends ConnectRecord<R>> implements Transform
             lookupKey = matcher.group(1);
             filterRegex = matcher.group(3);
             extractRegex = matcher.group(4);
-//                    "_[^_].*$"; // second part
-//                    "^[^_]+"; // first part
             if (id == null) id = lookupKey;
         }
 
